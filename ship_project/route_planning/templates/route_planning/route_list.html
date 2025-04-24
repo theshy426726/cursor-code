@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}航线规划 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-route"></i> 航线规划</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'route_create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> 新建航线规划
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <form method="get" class="form-inline">
+            <div class="form-group mr-2 mb-2">
+                <input type="text" name="search" class="form-control" placeholder="搜索船名或航线" value="{{ search_query }}">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">
+                <i class="fas fa-search"></i> 搜索
+            </button>
+            <a href="{% url 'route_list' %}" class="btn btn-outline-secondary mb-2 ml-2">
+                <i class="fas fa-redo"></i> 重置
+            </a>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>船舶</th>
+                        <th>起点</th>
+                        <th>终点</th>
+                        <th>算法</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for route in page_obj %}
+                    <tr>
+                        <td>{{ route.id }}</td>
+                        <td>{{ route.ship.name }}</td>
+                        <td>{{ route.start_point }}</td>
+                        <td>{{ route.end_point }}</td>
+                        <td>
+                            {% if route.algorithm == 'astar' %}
+                            <span class="badge badge-info">A*算法</span>
+                            {% else %}
+                            <span class="badge badge-warning">DDPG算法</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if route.status == 'planning' %}
+                            <span class="badge badge-secondary">规划中</span>
+                            {% elif route.status == 'completed' %}
+                            <span class="badge badge-success">已完成</span>
+                            {% else %}
+                            <span class="badge badge-danger">已取消</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ route.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <a href="{% url 'route_detail' route.pk %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i> 详情
+                            </a>
+                            {% if route.status == 'planning' %}
+                            <a href="{% url 'route_plan' route.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-drafting-compass"></i> 规划
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'route_delete' route.pk %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">没有找到航线规划记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        {% bootstrap_pagination page_obj %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}船舶列表 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-ship"></i> 船舶列表</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        {% if user.is_admin %}
+        <a href="{% url 'ship_create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> 添加船舶
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <form method="get" class="form-inline">
+            <div class="form-group mr-2 mb-2">
+                <input type="text" name="search" class="form-control" placeholder="搜索船名或编号" value="{{ search_query }}">
+            </div>
+            <div class="form-group mr-2 mb-2">
+                <select name="status" class="form-control">
+                    <option value="">所有状态</option>
+                    <option value="sailing" {% if status_filter == 'sailing' %}selected{% endif %}>航行中</option>
+                    <option value="docked" {% if status_filter == 'docked' %}selected{% endif %}>停泊中</option>
+                    <option value="maintenance" {% if status_filter == 'maintenance' %}selected{% endif %}>维修中</option>
+                </select>
+            </div>
+            <div class="form-group mr-2 mb-2">
+                <select name="ship_type" class="form-control">
+                    <option value="">所有类型</option>
+                    <option value="cargo" {% if ship_type_filter == 'cargo' %}selected{% endif %}>货船</option>
+                    <option value="passenger" {% if ship_type_filter == 'passenger' %}selected{% endif %}>客船</option>
+                    <option value="tanker" {% if ship_type_filter == 'tanker' %}selected{% endif %}>油轮</option>
+                    <option value="fishing" {% if ship_type_filter == 'fishing' %}selected{% endif %}>渔船</option>
+                    <option value="other" {% if ship_type_filter == 'other' %}selected{% endif %}>其他</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">
+                <i class="fas fa-search"></i> 搜索
+            </button>
+            <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary mb-2 ml-2">
+                <i class="fas fa-redo"></i> 重置
+            </a>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>编号</th>
+                        <th>船名</th>
+                        <th>类型</th>
+                        <th>生产年份</th>
+                        <th>船长(米)</th>
+                        <th>吨位(吨)</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ship in page_obj %}
+                    <tr>
+                        <td>{{ ship.ship_id }}</td>
+                        <td>{{ ship.name }}</td>
+                        <td>{{ ship.get_ship_type_display }}</td>
+                        <td>{{ ship.production_year }}</td>
+                        <td>{{ ship.length }}</td>
+                        <td>{{ ship.tonnage }}</td>
+                        <td>
+                            {% if ship.status == 'sailing' %}
+                            <span class="badge badge-primary">航行中</span>
+                            {% elif ship.status == 'docked' %}
+                            <span class="badge badge-success">停泊中</span>
+                            {% else %}
+                            <span class="badge badge-warning">维修中</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'ship_detail' ship.pk %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i> 详情
+                            </a>
+                            {% if user.is_admin %}
+                            <a href="{% url 'ship_update' ship.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="{% url 'ship_delete' ship.pk %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">没有找到船舶信息</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        {% bootstrap_pagination page_obj %}
+    </div>
+</div>
+{% endblock %} 

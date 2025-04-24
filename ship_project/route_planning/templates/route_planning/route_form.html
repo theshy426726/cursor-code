@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}创建航线 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-route"></i> 创建航线</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'route_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回航线列表
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4>填写航线信息</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="alert alert-info">
+                <p><i class="fas fa-info-circle"></i> 请先创建航线基本信息，然后进行路径规划。</p>
+                <p>起点和终点坐标格式为："x,y" 或 "(x,y)",其中x和y为0-99的整数。</p>
+            </div>
+            
+            {% bootstrap_form form %}
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 创建航线
+                </button>
+                <a href="{% url 'route_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

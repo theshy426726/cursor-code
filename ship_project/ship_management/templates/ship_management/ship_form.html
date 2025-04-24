@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+{% if ship %}编辑船舶 - {{ ship.name }}{% else %}添加船舶{% endif %} - 船舶管理系统
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2>
+            {% if ship %}
+            <i class="fas fa-edit"></i> 编辑船舶
+            {% else %}
+            <i class="fas fa-plus"></i> 添加船舶
+            {% endif %}
+        </h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回船舶列表
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4>
+            {% if ship %}
+            编辑：{{ ship.name }}
+            {% else %}
+            新建船舶
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    {% bootstrap_field form.ship_id %}
+                    {% bootstrap_field form.name %}
+                    {% bootstrap_field form.ship_type %}
+                    {% bootstrap_field form.production_year %}
+                </div>
+                <div class="col-md-6">
+                    {% bootstrap_field form.length %}
+                    {% bootstrap_field form.tonnage %}
+                    {% bootstrap_field form.status %}
+                    {% bootstrap_field form.image %}
+                </div>
+            </div>
+            
+            {% bootstrap_field form.description %}
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+                <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if ship and ship.image %}
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h4>当前船舶图片</h4>
+    </div>
+    <div class="card-body text-center">
+        <img src="{{ ship.image.url }}" alt="{{ ship.name }}" class="img-fluid" style="max-height: 300px;">
+    </div>
+</div>
+{% endif %}
+{% endblock %}

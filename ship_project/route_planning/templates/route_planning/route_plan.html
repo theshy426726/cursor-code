@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}航线规划 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-drafting-compass"></i> 航线规划</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'route_detail' route.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回航线详情
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>航线信息</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 font-weight-bold">航线ID:</div>
+                    <div class="col-md-8">{{ route.id }}</div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 font-weight-bold">船舶:</div>
+                    <div class="col-md-8">{{ route.ship.name }} ({{ route.ship.ship_id }})</div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 font-weight-bold">起点:</div>
+                    <div class="col-md-8">{{ route.start_point }}</div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 font-weight-bold">终点:</div>
+                    <div class="col-md-8">{{ route.end_point }}</div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 font-weight-bold">状态:</div>
+                    <div class="col-md-8">
+                        <span class="badge badge-secondary">规划中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h4>选择规划算法</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="algorithm">选择算法:</label>
+                        <select name="algorithm" id="algorithm" class="form-control">
+                            <option value="astar">A*算法 - 基于启发式搜索的最短路径算法</option>
+                            <option value="ddpg">DDPG算法 - 深度确定性策略梯度算法</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="accordion" id="algorithmInfo">
+                            <div class="card">
+                                <div class="card-header" id="headingAstar">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseAstar" aria-expanded="true" aria-controls="collapseAstar">
+                                            A*算法说明
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="collapseAstar" class="collapse show" aria-labelledby="headingAstar" data-parent="#algorithmInfo">
+                                    <div class="card-body">
+                                        <p>A*算法是一种启发式搜索算法，它能够找到从起点到终点的最短路径。</p>
+                                        <p>优点：</p>
+                                        <ul>
+                                            <li>可以找到最优路径</li>
+                                            <li>计算速度较快</li>
+                                            <li>易于实现</li>
+                                        </ul>
+                                        <p>缺点：</p>
+                                        <ul>
+                                            <li>在大型地图上可能会消耗较多内存</li>
+                                            <li>难以处理动态障碍物</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header" id="headingDdpg">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseDdpg" aria-expanded="false" aria-controls="collapseDdpg">
+                                            DDPG算法说明
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="collapseDdpg" class="collapse" aria-labelledby="headingDdpg" data-parent="#algorithmInfo">
+                                    <div class="card-body">
+                                        <p>DDPG（深度确定性策略梯度）是一种强化学习算法，它结合了深度学习和强化学习的优点。</p>
+                                        <p>优点：</p>
+                                        <ul>
+                                            <li>可以处理连续动作空间</li>
+                                            <li>能够学习复杂环境下的最优策略</li>
+                                            <li>更适合动态环境</li>
+                                        </ul>
+                                        <p>缺点：</p>
+                                        <ul>
+                                            <li>需要较长的训练时间</li>
+                                            <li>对超参数较为敏感</li>
+                                            <li>实现复杂度高</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block">
+                            <i class="fas fa-play"></i> 开始路径规划
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4>航线规划说明</h4>
+            </div>
+            <div class="card-body">
+                <p>在本系统中，我们提供了两种路径规划算法：</p>
+                
+                <h5>1. A*算法</h5>
+                <p>A*算法是一种常用的路径规划算法，它会寻找一条从起点到终点的最短路径，同时避开障碍物。该算法结合了Dijkstra算法的优点（确保找到最短路径）和最佳优先搜索的优点（使用启发式函数减少搜索空间）。</p>
+                
+                <h5>2. DDPG算法</h5>
+                <p>DDPG（深度确定性策略梯度）是一种基于深度强化学习的路径规划算法。它使用神经网络来学习最优策略，能够适应复杂的环境条件，并生成平滑的路径。</p>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 路径规划过程可能需要一些时间，特别是DDPG算法。请耐心等待规划完成。
+                </div>
+                
+                <h5>航行限制条件</h5>
+                <ul>
+                    <li>系统会自动避开障碍物（例如岛屿、浅滩等）</li>
+                    <li>系统以100x100的网格表示海域，起点和终点坐标需在此范围内</li>
+                </ul>
+                
+                <h5>规划结果</h5>
+                <p>规划完成后，系统将显示：</p>
+                <ul>
+                    <li>航线可视化地图</li>
+                    <li>航行总距离（海里）</li>
+                    <li>预计航行时间（小时）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

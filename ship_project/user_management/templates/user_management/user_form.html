@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+{% if edit_user %}编辑用户 - {{ edit_user.username }}{% else %}创建用户{% endif %} - 船舶管理系统
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2>
+            {% if edit_user %}
+            <i class="fas fa-user-edit"></i> 编辑用户
+            {% else %}
+            <i class="fas fa-user-plus"></i> 创建用户
+            {% endif %}
+        </h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回用户列表
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4>
+            {% if edit_user %}
+            编辑：{{ edit_user.username }}
+            {% else %}
+            新建用户
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+                <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

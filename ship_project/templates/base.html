@@ -1,0 +1,93 @@
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}船舶信息管理及路径规划系统{% endblock %}</title>
+    {% bootstrap_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            border-top: 1px solid #e7e7e7;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'ship_list' %}">
+                <i class="fas fa-ship"></i> 船舶管理系统
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ship_list' %}"><i class="fas fa-ship"></i> 船舶列表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'route_list' %}"><i class="fas fa-route"></i> 航线规划</a>
+                    </li>
+                    {% if user.is_authenticated and user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'user_list' %}"><i class="fas fa-users"></i> 用户管理</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user"></i> {{ user.username }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-id-card"></i> 个人信息</a>
+                            <a class="dropdown-item" href="{% url 'change_password' %}"><i class="fas fa-key"></i> 修改密码</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> 登录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> 注册</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% bootstrap_messages %}
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer class="footer bg-light">
+        <div class="container text-center">
+            <p class="text-muted">© 2025 船信息管理及路径规划系统</p>
+        </div>
+    </footer>
+
+    {% bootstrap_javascript jquery='full' %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}{{ ship.name }} - 船舶详情 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-ship"></i> 船舶详情</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回船舶列表
+        </a>
+        {% if user.is_admin %}
+        <a href="{% url 'ship_update' ship.pk %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> 编辑
+        </a>
+        <a href="{% url 'ship_delete' ship.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> 删除
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>{{ ship.name }}</h4>
+            </div>
+            {% if ship.image %}
+            <img src="{{ ship.image.url }}" alt="{{ ship.name }}" class="card-img-top">
+            {% else %}
+            <div class="card-img-top bg-light text-center py-5">
+                <i class="fas fa-ship fa-5x text-muted"></i>
+                <p class="mt-3 text-muted">无船舶图片</p>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">编号：{{ ship.ship_id }}</h5>
+                    {% if ship.status == 'sailing' %}
+                    <span class="badge badge-primary">航行中</span>
+                    {% elif ship.status == 'docked' %}
+                    <span class="badge badge-success">停泊中</span>
+                    {% else %}
+                    <span class="badge badge-warning">维修中</span>
+                    {% endif %}
+                </div>
+                <p class="card-text">
+                    <strong>类型：</strong> {{ ship.get_ship_type_display }}<br>
+                    <strong>生产年份：</strong> {{ ship.production_year }}年<br>
+                    <strong>船长：</strong> {{ ship.length }} 米<br>
+                    <strong>吨位：</strong> {{ ship.tonnage }} 吨
+                </p>
+            </div>
+            <div class="card-footer text-muted">
+                <small>创建时间：{{ ship.created_at|date:"Y-m-d H:i" }}</small><br>
+                <small>最后更新：{{ ship.updated_at|date:"Y-m-d H:i" }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4>船舶描述</h4>
+            </div>
+            <div class="card-body">
+                {% if ship.description %}
+                {{ ship.description|linebreaks }}
+                {% else %}
+                <p class="text-muted">无描述信息</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if ship.routes.exists %}
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>历史航线</h4>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>起点</th>
+                                <th>终点</th>
+                                <th>创建时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for route in ship.routes.all %}
+                            <tr>
+                                <td>{{ route.id }}</td>
+                                <td>{{ route.start_point }}</td>
+                                <td>{{ route.end_point }}</td>
+                                <td>{{ route.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    {% if route.status == 'planning' %}
+                                    <span class="badge badge-secondary">规划中</span>
+                                    {% elif route.status == 'completed' %}
+                                    <span class="badge badge-success">已完成</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">已取消</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'route_detail' route.pk %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-info-circle"></i> 详情
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.role == 'captain' and ship.status in 'sailing,docked' %}
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h4>航线规划</h4>
+    </div>
+    <div class="card-body">
+        <p>您可以为这艘船创建新的航线规划。</p>
+        <a href="{% url 'route_create' %}?ship={{ ship.id }}" class="btn btn-success">
+            <i class="fas fa-route"></i> 创建航线规划
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

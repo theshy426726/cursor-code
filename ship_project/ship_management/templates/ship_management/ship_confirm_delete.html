@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}删除船舶 - {{ ship.name }} - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-trash"></i> 删除船舶</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回船舶列表
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h4>确认删除</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 text-center mb-3">
+                {% if ship.image %}
+                <img src="{{ ship.image.url }}" alt="{{ ship.name }}" class="img-fluid" style="max-height: 150px;">
+                {% else %}
+                <div class="bg-light py-4 px-2 text-center">
+                    <i class="fas fa-ship fa-4x text-muted"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9">
+                <h3>{{ ship.name }}</h3>
+                <p class="lead">您确定要删除这艘船舶吗？</p>
+                
+                <dl class="row">
+                    <dt class="col-sm-3">船舶ID:</dt>
+                    <dd class="col-sm-9">{{ ship.ship_id }}</dd>
+                    
+                    <dt class="col-sm-3">类型:</dt>
+                    <dd class="col-sm-9">{{ ship.get_ship_type_display }}</dd>
+                    
+                    <dt class="col-sm-3">生产年份:</dt>
+                    <dd class="col-sm-9">{{ ship.production_year }}年</dd>
+                    
+                    <dt class="col-sm-3">状态:</dt>
+                    <dd class="col-sm-9">
+                        {% if ship.status == 'sailing' %}
+                        <span class="badge badge-primary">航行中</span>
+                        {% elif ship.status == 'docked' %}
+                        <span class="badge badge-success">停泊中</span>
+                        {% else %}
+                        <span class="badge badge-warning">维修中</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        
+        {% if ship.routes.exists %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> <strong>警告</strong>：该船舶有 {{ ship.routes.count }} 条关联的航线规划记录。删除该船舶将会删除所有相关的航线规划记录。
+        </div>
+        {% endif %}
+        
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> <strong>警告</strong>：此操作无法撤销。一旦删除，所有数据将永久丢失。
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> 确认删除
+                </button>
+                <a href="{% url 'ship_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

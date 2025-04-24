@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}删除航线 - 船舶管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h2><i class="fas fa-trash"></i> 删除航线</h2>
+    </div>
+    <div class="col-md-4 text-right">
+        <a href="{% url 'route_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回航线列表
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h4>确认删除</h4>
+    </div>
+    <div class="card-body">
+        <p class="lead">您确定要删除以下航线吗？</p>
+        
+        <dl class="row">
+            <dt class="col-sm-3">航线ID:</dt>
+            <dd class="col-sm-9">{{ route.id }}</dd>
+            
+            <dt class="col-sm-3">船舶:</dt>
+            <dd class="col-sm-9">{{ route.ship.name }}</dd>
+            
+            <dt class="col-sm-3">起点:</dt>
+            <dd class="col-sm-9">{{ route.start_point }}</dd>
+            
+            <dt class="col-sm-3">终点:</dt>
+            <dd class="col-sm-9">{{ route.end_point }}</dd>
+            
+            <dt class="col-sm-3">状态:</dt>
+            <dd class="col-sm-9">
+                {% if route.status == 'planning' %}
+                <span class="badge badge-secondary">规划中</span>
+                {% elif route.status == 'completed' %}
+                <span class="badge badge-success">已完成</span>
+                {% else %}
+                <span class="badge badge-danger">已取消</span>
+                {% endif %}
+            </dd>
+            
+            <dt class="col-sm-3">创建时间:</dt>
+            <dd class="col-sm-9">{{ route.created_at|date:"Y-m-d H:i:s" }}</dd>
+        </dl>
+        
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> 警告：此操作无法撤销。删除后，所有相关的路径规划数据将永久丢失。
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> 确认删除
+                </button>
+                <a href="{% url 'route_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> 取消
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

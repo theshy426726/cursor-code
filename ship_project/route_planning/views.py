@@ -12,9 +12,9 @@ from .route_algorithms import astar_algorithm, ddpg_algorithm
 def route_list_view(request):
     # 管理员可以看到所有路径，普通用户只能看到自己的路径
     if request.user.is_admin:
-        routes = Route.objects.all()
+        routes = Route.objects.select_related('ship', 'user').all()
     else:
-        routes = Route.objects.filter(user=request.user)
+        routes = Route.objects.select_related('ship', 'user').filter(user=request.user)
     
     # 搜索功能
     search_query = request.GET.get('search', '')

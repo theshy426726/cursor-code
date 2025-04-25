@@ -229,8 +229,9 @@ GAMMA = 0.99  # 折扣因子
 TAU = 0.001  # 软更新参数
 BATCH_SIZE = 256  # 批量大小
 BUFFER_SIZE = 100000  # 经验回放缓冲区大小
-NOISE_STD = 0.2  # 噪声标准差
-NOISE_DECAY = 0.9999  # 噪声衰减因子
+NOISE_STD = 0.4  # 增加噪声标准差提高探索性
+NOISE_DECAY = 0.999  # 减缓噪声衰减速度
+NOISE_MIN = 0.05  # 噪声最小值，防止探索性过早衰减为零
 
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_dim):
@@ -301,12 +302,13 @@ class GaussianNoise:
         self.action_dim = action_dim
         self.std = std
         self.decay = NOISE_DECAY
+        self.min_std = NOISE_MIN
         
     def sample(self):
         return np.random.normal(0, self.std, size=self.action_dim)
     
     def decay_noise(self):
-        self.std *= self.decay
+        self.std = max(self.min_std, self.std * self.decay)
 
 class DDPGAgent:
     def __init__(self, state_dim, action_dim, hidden_dim):
@@ -405,7 +407,31 @@ def get_reward(current_state, next_state, goal, start_to_goal_dist):
     """
     # 计算距离奖励: 负的下一位置到终点的距离 / 起点到终点的距离
     next_to_goal_dist = math.sqrt((next_state[0] - goal[0])**2 + (next_state[1] - goal[1])**2)
-    distance_reward = -next_to_goal_dist / start_to_goal_dist
+    current_to_goal_dist = math.sqrt((current_state[0] - goal[0])**2 + (current_state[1] - goal[1])**2)
+    
+    # 改进: 鼓励朝向目标移动，而不只是距离变近
+    distance_reward = (current_to_goal_dist - next_to_goal_dist) * 10
+    
+    # 添加方向引导奖励
+    if current_to_goal_dist > 0:
+        # 计算当前移动方向
+        move_direction = np.array([next_state[0] - current_state[0], next_state[1] - current_state[1]])
+        move_norm = np.linalg.norm(move_direction)
+        
+        # 计算到目标的方向
+        goal_direction = np.array([goal[0] - current_state[0], goal[1] - current_state[1]])
+        goal_norm = np.linalg.norm(goal_direction)
+        
+        # 如果有实际移动，计算方向一致性
+        if move_norm > 0 and goal_norm > 0:
+            move_direction = move_direction / move_norm
+            goal_direction = goal_direction / goal_norm
+            direction_similarity = np.dot(move_direction, goal_direction)
+            direction_reward = direction_similarity * 5
+        else:
+            direction_reward = 0
+    else:
+        direction_reward = 0
     
     # 计算障碍物奖励
     obstacle_penalty = 0
@@ -426,7 +452,7 @@ def get_reward(current_state, next_state, goal, start_to_goal_dist):
         boundary_penalty = -10  # 降低边界惩罚
     
     # 计算总奖励
-    total_reward = distance_reward + obstacle_penalty + boundary_penalty
+    total_reward = distance_reward + direction_reward + obstacle_penalty + boundary_penalty
     
     # 到达目标的额外奖励
     if next_to_goal_dist < 1.5:
@@ -509,10 +535,19 @@ def ddpg_algorithm(start_point_str, end_point_str):
     
     # 训练参数
     max_episodes = 150
-    max_steps = 200
+    max_steps = 300  # 增加每轮的最大步数
     best_reward = float('-inf')
     best_path = None
     best_distance = 0
+    
+    # 计算A*最优路径(用于指导和比较)
+    try:
+        ideal_path_data, _, _ = astar_algorithm(f"{start[0]},{start[1]}", f"{goal[0]},{goal[1]}")
+        ideal_path = [(point["x"], point["y"]) for point in ideal_path_data["points"]]
+        print(f"A*算法找到的路径长度: {len(ideal_path)}")
+    except:
+        ideal_path = None
+        print("无法计算A*最优路径")
     
     # 用于记录训练指标
     episode_rewards = []
@@ -581,13 +616,7 @@ def ddpg_algorithm(start_point_str, end_point_str):
             # 更新状态和路径
             state = next_state
             
-            # 如果智能体已经到达目标位置，则提前结束本轮
-            if done:
-                # 确保路径包含终点
-                current_path.append(tuple(goal))
-                break
-                
-            # 如果智能体出界，则将智能体拉回边界而不是终止训练
+            # 将智能体拉回边界而不是终止训练
             if state[0] < 0:
                 state[0] = 0
             elif state[0] >= MAP_SIZE[0]:
@@ -624,13 +653,15 @@ def ddpg_algorithm(start_point_str, end_point_str):
             episode_critic_losses.append(0)
             episode_actor_losses.append(0)
         
-        # 更新最优路径
-        if done or episode_reward > best_reward:
+        # 更新最优路径（修复判断逻辑）
+        if episode_reward > best_reward:
             best_reward = episode_reward
             best_path = current_path
             best_distance = current_distance
             agent.save('ddpg_model.pth')
             print(f'\nEpisode {episode+1}: 找到更好的路径! 奖励: {best_reward:.2f}, 距离: {best_distance:.2f}')
+        else:
+            print(f'Episode {episode+1}: Reward={episode_reward:.2f}, Steps={len(current_path)}, Path Length={current_distance:.2f}')
         
         # 衰减噪声
         agent.decay_noise()
